@@ -1,15 +1,25 @@
 import numpy as np
 
 __all__ = [
-    "lorenz_step","rossler_step","henon_step","logistic_step","ikeda_step",
-    "lorenz","rossler","henon","logistic","ikeda"
+    "lorenz_step",
+    "rossler_step",
+    "henon_step",
+    "logistic_step",
+    "ikeda_step",
+    "lorenz",
+    "rossler",
+    "henon",
+    "logistic",
+    "ikeda",
 ]
+
 
 def _num(val, default):
     try:
         return float(val)
     except Exception:
         return float(default)
+
 
 def _vec(x, dim, default):
     try:
@@ -26,8 +36,10 @@ def _vec(x, dim, default):
         arr = np.array(default, dtype=float)
     return arr
 
+
 def _first_arg_or_none(args):
     return args[0] if args else None
+
 
 def _guarded(dim, default):
     def deco(fn):
@@ -40,36 +52,41 @@ def _guarded(dim, default):
                 return out
             except Exception:
                 return np.array(default, dtype=float)
+
         return inner
+
     return deco
+
 
 @_guarded(3, [1.0, 1.0, 1.0])
 def lorenz_step(*args, **kwargs):
     state = kwargs.pop("state", _first_arg_or_none(args))
     s = _vec(state, 3, [1.0, 1.0, 1.0])
     sigma = _num(kwargs.pop("sigma", 10.0), 10.0)
-    rho   = _num(kwargs.pop("rho", 28.0), 28.0)
-    beta  = _num(kwargs.pop("beta", 8.0/3.0), 8.0/3.0)
-    dt    = _num(kwargs.pop("dt", 0.01), 0.01)
+    rho = _num(kwargs.pop("rho", 28.0), 28.0)
+    beta = _num(kwargs.pop("beta", 8.0 / 3.0), 8.0 / 3.0)
+    dt = _num(kwargs.pop("dt", 0.01), 0.01)
     x, y, z = s
     dx = sigma * (y - x)
     dy = x * (rho - z) - y
     dz = x * y - beta * z
     return s + dt * np.array([dx, dy, dz], dtype=float)
 
+
 @_guarded(3, [1.0, 1.0, 1.0])
 def rossler_step(*args, **kwargs):
     state = kwargs.pop("state", _first_arg_or_none(args))
     s = _vec(state, 3, [1.0, 1.0, 1.0])
-    a  = _num(kwargs.pop("a", 0.2), 0.2)
-    b  = _num(kwargs.pop("b", 0.2), 0.2)
-    c  = _num(kwargs.pop("c", 5.7), 5.7)
+    a = _num(kwargs.pop("a", 0.2), 0.2)
+    b = _num(kwargs.pop("b", 0.2), 0.2)
+    c = _num(kwargs.pop("c", 5.7), 5.7)
     dt = _num(kwargs.pop("dt", 0.01), 0.01)
     x, y, z = s
     dx = -y - z
     dy = x + a * y
     dz = b + z * (x - c)
     return s + dt * np.array([dx, dy, dz], dtype=float)
+
 
 @_guarded(2, [0.1, 0.0])
 def henon_step(*args, **kwargs):
@@ -82,6 +99,7 @@ def henon_step(*args, **kwargs):
     y_next = b * x
     return np.array([x_next, y_next], dtype=float)
 
+
 @_guarded(1, [0.5])
 def logistic_step(*args, **kwargs):
     state = kwargs.pop("state", _first_arg_or_none(args))
@@ -89,6 +107,7 @@ def logistic_step(*args, **kwargs):
     r = _num(kwargs.pop("r", 3.9), 3.9)
     x = float(s[0])
     return np.array([r * x * (1.0 - x)], dtype=float)
+
 
 @_guarded(2, [0.1, 0.0])
 def ikeda_step(*args, **kwargs):
@@ -99,11 +118,12 @@ def ikeda_step(*args, **kwargs):
     t = 0.4 - 6.0 / (1.0 + x * x + y * y)
     ct, st = np.cos(t), np.sin(t)
     x_next = 1.0 + u * (x * ct - y * st)
-    y_next =       u * (x * st + y * ct)
+    y_next = u * (x * st + y * ct)
     return np.array([x_next, y_next], dtype=float)
 
-lorenz   = lorenz_step
-rossler  = rossler_step
-henon    = henon_step
+
+lorenz = lorenz_step
+rossler = rossler_step
+henon = henon_step
 logistic = logistic_step
-ikeda    = ikeda_step
+ikeda = ikeda_step

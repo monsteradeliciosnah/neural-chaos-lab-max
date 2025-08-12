@@ -1,0 +1,2 @@
+[console_scripts]
+chaoslab = neural_chaos_lab_max.cli:app
