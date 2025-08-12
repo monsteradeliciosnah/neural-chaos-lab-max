@@ -1,33 +1,36 @@
+from __future__ import annotations
 import numpy as np
+from numpy.typing import ArrayLike
 
+__all__ = [
+    "logistic_map_step",
+    "henon_step",
+    "lorenz_step",
+]
 
-def lorenz(n=5000, dt=0.01, sigma=10.0, rho=28.0, beta=8 / 3):
-    x, y, z = 1.0, 1.0, 1.0
-    xs, ys, zs = [], [], []
-    for _ in range(n):
-        dx = sigma * (y - x)
-        dy = x * (rho - z) - y
-        dz = x * y - beta * z
-        x += dx * dt
-        y += dy * dt
-        z += dz * dt
-        xs.append(x)
-        ys.append(y)
-        zs.append(z)
-    return np.stack([xs, ys, zs], axis=1)
+def _as_array(x: ArrayLike) -> np.ndarray:
+    return np.asarray(x)
 
+def logistic_map_step(x: ArrayLike, r: float = 3.8) -> np.ndarray:
+    X = _as_array(x)
+    return r * X * (1.0 - X)
 
-def rossler(n=5000, dt=0.01, a=0.2, b=0.2, c=5.7):
-    x, y, z = 1.0, 1.0, 1.0
-    xs, ys, zs = [], [], []
-    for _ in range(n):
-        dx = -y - z
-        dy = x + a * y
-        dz = b + z * (x - c)
-        x += dx * dt
-        y += dy * dt
-        z += dz * dt
-        xs.append(x)
-        ys.append(y)
-        zs.append(z)
-    return np.stack([xs, ys, zs], axis=1)
+def henon_step(state: ArrayLike, a: float = 1.4, b: float = 0.3) -> np.ndarray:
+    S = _as_array(state)
+    if S.shape[-1] != 2:
+        raise ValueError("henon_step expects last dimension == 2 (x, y).")
+    x, y = S[..., 0], S[..., 1]
+    x_next = 1.0 - a * x * x + y
+    y_next = b * x
+    return np.stack([x_next, y_next], axis=-1)
+
+def lorenz_step(state: ArrayLike, dt: float = 0.01,
+                sigma: float = 10.0, beta: float = 8.0/3.0, rho: float = 28.0) -> np.ndarray:
+    S = _as_array(state)
+    if S.shape[-1] != 3:
+        raise ValueError("lorenz_step expects last dimension == 3 (x, y, z).")
+    x, y, z = S[..., 0], S[..., 1], S[..., 2]
+    dx = sigma * (y - x)
+    dy = x * (rho - z) - y
+    dz = x * y - beta * z
+    return np.stack([x + dt * dx, y + dt * dy, z + dt * dz], axis=-1)
