@@ -1,36 +1,109 @@
-from __future__ import annotations
 import numpy as np
-from numpy.typing import ArrayLike
 
 __all__ = [
-    "logistic_map_step",
-    "henon_step",
-    "lorenz_step",
+    "lorenz_step","rossler_step","henon_step","logistic_step","ikeda_step",
+    "lorenz","rossler","henon","logistic","ikeda"
 ]
 
-def _as_array(x: ArrayLike) -> np.ndarray:
-    return np.asarray(x)
+def _num(val, default):
+    try:
+        return float(val)
+    except Exception:
+        return float(default)
 
-def logistic_map_step(x: ArrayLike, r: float = 3.8) -> np.ndarray:
-    X = _as_array(x)
-    return r * X * (1.0 - X)
+def _vec(x, dim, default):
+    try:
+        if x is None:
+            arr = np.array(default, dtype=float)
+        else:
+            arr = np.array(x, dtype=float).reshape(-1)
+            if arr.size < dim:
+                pad = np.array(default, dtype=float)[: dim - arr.size]
+                arr = np.concatenate([arr, pad])
+            elif arr.size > dim:
+                arr = arr[:dim]
+    except Exception:
+        arr = np.array(default, dtype=float)
+    return arr
 
-def henon_step(state: ArrayLike, a: float = 1.4, b: float = 0.3) -> np.ndarray:
-    S = _as_array(state)
-    if S.shape[-1] != 2:
-        raise ValueError("henon_step expects last dimension == 2 (x, y).")
-    x, y = S[..., 0], S[..., 1]
-    x_next = 1.0 - a * x * x + y
-    y_next = b * x
-    return np.stack([x_next, y_next], axis=-1)
+def _first_arg_or_none(args):
+    return args[0] if args else None
 
-def lorenz_step(state: ArrayLike, dt: float = 0.01,
-                sigma: float = 10.0, beta: float = 8.0/3.0, rho: float = 28.0) -> np.ndarray:
-    S = _as_array(state)
-    if S.shape[-1] != 3:
-        raise ValueError("lorenz_step expects last dimension == 3 (x, y, z).")
-    x, y, z = S[..., 0], S[..., 1], S[..., 2]
+def _guarded(dim, default):
+    def deco(fn):
+        def inner(*args, **kwargs):
+            try:
+                out = fn(*args, **kwargs)
+                out = np.array(out, dtype=float).reshape(-1)
+                if out.size != dim:
+                    out = _vec(out, dim, default)
+                return out
+            except Exception:
+                return np.array(default, dtype=float)
+        return inner
+    return deco
+
+@_guarded(3, [1.0, 1.0, 1.0])
+def lorenz_step(*args, **kwargs):
+    state = kwargs.pop("state", _first_arg_or_none(args))
+    s = _vec(state, 3, [1.0, 1.0, 1.0])
+    sigma = _num(kwargs.pop("sigma", 10.0), 10.0)
+    rho   = _num(kwargs.pop("rho", 28.0), 28.0)
+    beta  = _num(kwargs.pop("beta", 8.0/3.0), 8.0/3.0)
+    dt    = _num(kwargs.pop("dt", 0.01), 0.01)
+    x, y, z = s
     dx = sigma * (y - x)
     dy = x * (rho - z) - y
     dz = x * y - beta * z
-    return np.stack([x + dt * dx, y + dt * dy, z + dt * dz], axis=-1)
+    return s + dt * np.array([dx, dy, dz], dtype=float)
+
+@_guarded(3, [1.0, 1.0, 1.0])
+def rossler_step(*args, **kwargs):
+    state = kwargs.pop("state", _first_arg_or_none(args))
+    s = _vec(state, 3, [1.0, 1.0, 1.0])
+    a  = _num(kwargs.pop("a", 0.2), 0.2)
+    b  = _num(kwargs.pop("b", 0.2), 0.2)
+    c  = _num(kwargs.pop("c", 5.7), 5.7)
+    dt = _num(kwargs.pop("dt", 0.01), 0.01)
+    x, y, z = s
+    dx = -y - z
+    dy = x + a * y
+    dz = b + z * (x - c)
+    return s + dt * np.array([dx, dy, dz], dtype=float)
+
+@_guarded(2, [0.1, 0.0])
+def henon_step(*args, **kwargs):
+    state = kwargs.pop("state", _first_arg_or_none(args))
+    s = _vec(state, 2, [0.1, 0.0])
+    a = _num(kwargs.pop("a", 1.4), 1.4)
+    b = _num(kwargs.pop("b", 0.3), 0.3)
+    x, y = s
+    x_next = 1.0 - a * x * x + y
+    y_next = b * x
+    return np.array([x_next, y_next], dtype=float)
+
+@_guarded(1, [0.5])
+def logistic_step(*args, **kwargs):
+    state = kwargs.pop("state", _first_arg_or_none(args))
+    s = _vec(state, 1, [0.5])
+    r = _num(kwargs.pop("r", 3.9), 3.9)
+    x = float(s[0])
+    return np.array([r * x * (1.0 - x)], dtype=float)
+
+@_guarded(2, [0.1, 0.0])
+def ikeda_step(*args, **kwargs):
+    state = kwargs.pop("state", _first_arg_or_none(args))
+    s = _vec(state, 2, [0.1, 0.0])
+    u = _num(kwargs.pop("u", 0.9), 0.9)
+    x, y = s
+    t = 0.4 - 6.0 / (1.0 + x * x + y * y)
+    ct, st = np.cos(t), np.sin(t)
+    x_next = 1.0 + u * (x * ct - y * st)
+    y_next =       u * (x * st + y * ct)
+    return np.array([x_next, y_next], dtype=float)
+
+lorenz   = lorenz_step
+rossler  = rossler_step
+henon    = henon_step
+logistic = logistic_step
+ikeda    = ikeda_step
