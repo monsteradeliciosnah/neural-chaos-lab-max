@@ -1,22 +1,26 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import numpy as np, os
+import numpy as np
+import os
 from .systems import lorenz, rossler
 from .neural_ode import NeuralODEModel
 import torch
 
 app = FastAPI(title="Neural Chaos Lab Max")
 
+
 class GenReq(BaseModel):
     system: str = "lorenz"
     n: int = 5000
 
+
 @app.post("/generate")
 def generate(req: GenReq):
-    series = lorenz(req.n) if req.system=="lorenz" else rossler(req.n)
+    series = lorenz(req.n) if req.system == "lorenz" else rossler(req.n)
     os.makedirs("data", exist_ok=True)
     np.savetxt("data/series.csv", series, delimiter=",")
     return {"ok": True, "shape": [int(x) for x in series.shape]}
+
 
 @app.post("/forecast")
 def forecast(steps: int = 200):

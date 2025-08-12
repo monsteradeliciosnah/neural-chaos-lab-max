@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: neural-chaos-lab-max
+Version: 0.1.0
+Summary: Hybrid chaos forecasting with neural ODEs, ESN, and controls
+Author: Lord Nibbler
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.26.4
+Requires-Dist: pandas>=2.2.2
+Requires-Dist: scikit-learn>=1.5.0
+Requires-Dist: torch>=2.2.2
+Requires-Dist: torchdiffeq>=0.2.3
+Requires-Dist: fastapi>=0.112.0
+Requires-Dist: uvicorn[standard]>=0.30.0
+Requires-Dist: typer>=0.12.3
+Requires-Dist: rich>=13.7.0
+Requires-Dist: plotly>=5.22.0
+Requires-Dist: streamlit>=1.35.0
+
+# Neural Chaos Lab Max — hybrid forecasting with neural ODEs, ESN, and controls
+
+Author: Lord Nibbler
+
+Features:
+- Chaotic system generators (Lorenz, Rössler)
+- Neural ODE forecaster (torchdiffeq)
+- Echo State Network (reservoir computing) baseline
+- Control terms (additive control input)
+- FastAPI service and Streamlit dashboard
+- 3D Plotly attractor visualization

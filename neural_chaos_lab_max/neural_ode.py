@@ -1,19 +1,26 @@
-import torch, torch.nn as nn
+import torch
+import torch.nn as nn
 from torchdiffeq import odeint
+
 
 class ODEFunc(nn.Module):
     def __init__(self, dim=3, hidden=64):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(dim+1, hidden), nn.Tanh(),
-            nn.Linear(hidden, hidden), nn.Tanh(),
-            nn.Linear(hidden, dim)
+            nn.Linear(dim + 1, hidden),
+            nn.Tanh(),
+            nn.Linear(hidden, hidden),
+            nn.Tanh(),
+            nn.Linear(hidden, dim),
         )
+
     def forward(self, t, y):
         # y has shape (batch, dim); concatenate time as control input
-        if y.dim()==1: y = y.unsqueeze(0)
-        tvec = torch.ones(y.size(0),1, device=y.device)*t
+        if y.dim() == 1:
+            y = y.unsqueeze(0)
+        tvec = torch.ones(y.size(0), 1, device=y.device) * t
         return self.net(torch.cat([y, tvec], dim=1))
+
 
 class NeuralODEModel(nn.Module):
     def __init__(self, dim=3):
@@ -31,8 +38,9 @@ class NeuralODEModel(nn.Module):
         for ep in range(epochs):
             opt.zero_grad()
             yhat = self.forward(y0, t).squeeze(1)
-            loss = ((yhat - y)**2).mean()
-            loss.backward(); opt.step()
+            loss = ((yhat - y) ** 2).mean()
+            loss.backward()
+            opt.step()
         return self
 
     def forecast(self, y_last, steps=200, device="cpu"):
