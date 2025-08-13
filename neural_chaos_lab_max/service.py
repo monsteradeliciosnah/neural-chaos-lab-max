@@ -1,10 +1,12 @@
+import os
+
+import numpy as np
+import torch
 from fastapi import FastAPI
 from pydantic import BaseModel
-import numpy as np
-import os
-from .systems import lorenz, rossler
+
 from .neural_ode import NeuralODEModel
-import torch
+from .systems import lorenz, rossler
 
 app = FastAPI(title="Neural Chaos Lab Max")
 

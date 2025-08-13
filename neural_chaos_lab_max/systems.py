@@ -122,8 +122,46 @@ def ikeda_step(*args, **kwargs):
     return np.array([x_next, y_next], dtype=float)
 
 
-lorenz = lorenz_step
-rossler = rossler_step
-henon = henon_step
-logistic = logistic_step
-ikeda = ikeda_step
+def lorenz(n=5000, dt=0.01, sigma=10.0, rho=28.0, beta=8.0 / 3.0, x0=(1.0, 1.0, 1.0)):
+    s = _vec(x0, 3, [1.0, 1.0, 1.0])
+    xs = np.empty((int(n), 3), dtype=float)
+    for i in range(int(n)):
+        s = lorenz_step(state=s, dt=dt, sigma=sigma, rho=rho, beta=beta)
+        xs[i] = s
+    return xs
+
+
+def rossler(n=5000, dt=0.01, a=0.2, b=0.2, c=5.7, x0=(1.0, 1.0, 1.0)):
+    s = _vec(x0, 3, [1.0, 1.0, 1.0])
+    xs = np.empty((int(n), 3), dtype=float)
+    for i in range(int(n)):
+        s = rossler_step(state=s, dt=dt, a=a, b=b, c=c)
+        xs[i] = s
+    return xs
+
+
+def henon(n=10000, a=1.4, b=0.3, x0=(0.1, 0.0)):
+    s = _vec(x0, 2, [0.1, 0.0])
+    xs = np.empty((int(n), 2), dtype=float)
+    for i in range(int(n)):
+        s = henon_step(state=s, a=a, b=b)
+        xs[i] = s
+    return xs
+
+
+def logistic(n=10000, r=3.9, x0=(0.5,)):
+    s = _vec(x0, 1, [0.5])
+    xs = np.empty((int(n), 1), dtype=float)
+    for i in range(int(n)):
+        s = logistic_step(state=s, r=r)
+        xs[i] = s
+    return xs
+
+
+def ikeda(n=10000, u=0.9, x0=(0.1, 0.0)):
+    s = _vec(x0, 2, [0.1, 0.0])
+    xs = np.empty((int(n), 2), dtype=float)
+    for i in range(int(n)):
+        s = ikeda_step(state=s, u=u)
+        xs[i] = s
+    return xs

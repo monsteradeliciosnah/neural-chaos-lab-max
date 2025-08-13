@@ -19,11 +19,7 @@ def _call_with_best_guess(fn):
 
 
 def test_step_functions_return_shape():
-    mod = importlib.import_module(
-        "neural_chaos_lab_max.systems".replace(
-            "neural_chaos_lab_max", "neural_chaos_lab_max"
-        )
-    )
+    mod = importlib.import_module("neural_chaos_lab_max.systems")
     funcs = [
         getattr(mod, n)
         for n in dir(mod)
